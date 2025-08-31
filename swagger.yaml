@@ -1,0 +1,1123 @@
+openapi: 3.0.3
+info:
+  title: Ibrat Lead Calling System API
+  description: |
+    Complete backend API for AI-powered lead calling system with admin and operator panels
+    
+    ## 🚀 Quick Start Guide
+    
+    ### **1. Authentication Flow**
+    1. **Register User**: `POST /api/auth/register` (admin only)
+       - Use test credentials: `john.doe@ibrat.com` / `ibrat123`
+    2. **Login**: `POST /api/auth/login` with same credentials
+       - Copy JWT token from response
+    3. **Use APIs**: Add `Authorization: Bearer <token>` header
+    
+    ### **2. Test Credentials**
+    - **Admin**: `john.doe@ibrat.com` / `ibrat123`
+    - **Salesperson**: `jane.smith@ibrat.com` / `ibrat123`
+    
+    ### **3. API Access**
+    - **Admin Panel**: Full system access
+    - **Operator Panel**: Work interface only
+    - **Real-time**: WebSocket connections
+    
+    ### **4. Swagger Features**
+    - Click "Try it out" to test APIs
+    - Use "Authorize" button for JWT tokens
+    - View request/response schemas
+  version: 1.0.0
+  contact:
+    name: Backend Team
+    email: backend@ibrat.com
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+  - url: https://api.ibrat.com
+    description: Production server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token from /api/auth/login
+        
+        **How to use:**
+        1. Register: `POST /api/auth/register`
+        2. Login: `POST /api/auth/login` 
+        3. Copy token from response
+        4. Click "Authorize" button above
+        5. Enter: `Bearer <your_token>`
+        
+        **Example:**
+        ```
+        Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwN2YxZjc3YmNmODZjZDc5OTQzOTAxMSIsIm5hbWUiOiJKb2huIERvZSIsImVtYWlsIjoiam9obi5kb2VAaWJyYXQuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM1NzE5NjAwLCJleHAiOjE3MzU3MjU2MDB9.example
+        ```
+
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        phone:
+          type: string
+          example: "+1234567890"
+        role:
+          type: string
+          enum: [admin, salesperson]
+          example: "salesperson"
+        isActive:
+          type: boolean
+          example: true
+        isAvailable:
+          type: boolean
+          example: true
+        lastLogin:
+          type: string
+          format: date-time
+        callStats:
+          type: object
+          properties:
+            totalCalls:
+              type: number
+              example: 150
+            successfulCalls:
+              type: number
+              example: 120
+            totalDuration:
+              type: number
+              example: 7200
+
+    Lead:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439012"
+        phone:
+          type: string
+          example: "+1234567890"
+        name:
+          type: string
+          example: "Lead Name"
+        email:
+          type: string
+          format: email
+          example: "lead@example.com"
+        status:
+          type: string
+          enum: [pending, claimed, calling, answered, transferred, failed]
+          example: "pending"
+        priority:
+          type: string
+          enum: [urgent, high, medium, low]
+          example: "high"
+        callAttempts:
+          type: number
+          example: 0
+        assignedTo:
+          $ref: '#/components/schemas/User'
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["hot", "interested"]
+
+    CallLog:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439013"
+        lead:
+          $ref: '#/components/schemas/Lead'
+        salesperson:
+          $ref: '#/components/schemas/User'
+        twilioCallSid:
+          type: string
+          example: "CA1234567890"
+        status:
+          type: string
+          enum: [initiated, ringing, answered, completed, busy, no-answer, failed]
+          example: "initiated"
+        from:
+          type: string
+          example: "+1234567890"
+        to:
+          type: string
+          example: "+0987654321"
+        duration:
+          type: number
+          example: 180
+        notes:
+          type: string
+          example: "Customer interested in premium package"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john.doe@ibrat.com"
+        password:
+          type: string
+          example: "ibrat123"
+
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+        - password
+        - role
+      properties:
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@ibrat.com"
+        phone:
+          type: string
+          example: "+1234567890"
+        password:
+          type: string
+          minLength: 6
+          example: "ibrat123"
+        role:
+          type: string
+          enum: [admin, salesperson]
+          example: "admin"
+
+    LeadCreateRequest:
+      type: object
+      required:
+        - phone
+        - name
+      properties:
+        phone:
+          type: string
+          example: "+1234567890"
+        name:
+          type: string
+          example: "Lead Name"
+        email:
+          type: string
+          format: email
+          example: "lead@example.com"
+        priority:
+          type: string
+          enum: [urgent, high, medium, low]
+          example: "high"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["hot", "interested"]
+
+    CallInitiateRequest:
+      type: object
+      required:
+        - leadId
+      properties:
+        leadId:
+          type: string
+          example: "507f1f77bcf86cd799439012"
+
+    BulkActionRequest:
+      type: object
+      required:
+        - action
+        - leadIds
+        - data
+      properties:
+        action:
+          type: string
+          enum: [update_priority, update_status, add_tags, delete]
+          example: "update_priority"
+        leadIds:
+          type: array
+          items:
+            type: string
+          example: ["507f1f77bcf86cd799439012", "507f1f77bcf86cd799439013"]
+        data:
+          type: object
+          example:
+            priority: "high"
+
+    SystemControlRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum: [pause_queue, resume_queue, reset_stuck_leads, get_queue_status]
+          example: "pause_queue"
+
+    PaginationQuery:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+          example: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+          example: 20
+
+    DateRangeQuery:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+          example: "2024-01-01"
+        endDate:
+          type: string
+          format: date
+          example: "2024-01-31"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation error"
+        message:
+          type: string
+          example: "Phone number is required"
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      description: |
+        Create a new user account (admin only)
+        
+        **Example Workflow:**
+        1. Register user with these credentials
+        2. Use same credentials to login
+        3. Get JWT token for API access
+        
+        **Test Credentials:**
+        - Email: john.doe@ibrat.com
+        - Password: ibrat123
+        - Role: admin
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              admin_user:
+                summary: Admin User Registration
+                description: Register an admin user with test credentials
+                value:
+                  name: "John Doe"
+                  email: "john.doe@ibrat.com"
+                  phone: "+1234567890"
+                  password: "ibrat123"
+                  role: "admin"
+              salesperson_user:
+                summary: Salesperson User Registration
+                description: Register a salesperson user
+                value:
+                  name: "Jane Smith"
+                  email: "jane.smith@ibrat.com"
+                  phone: "+1234567891"
+                  password: "ibrat123"
+                  role: "salesperson"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "507f1f77bcf86cd799439011"
+                      name:
+                        type: string
+                        example: "John Doe"
+                      email:
+                        type: string
+                        example: "john.doe@ibrat.com"
+                      phone:
+                        type: string
+                        example: "+1234567890"
+                      role:
+                        type: string
+                        example: "admin"
+                      isActive:
+                        type: boolean
+                        example: true
+                      isAvailable:
+                        type: boolean
+                        example: true
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      description: |
+        Authenticate user and get JWT token
+        
+        **Example Workflow:**
+        1. Use credentials from registration
+        2. Get JWT token for API access
+        3. Include token in Authorization header
+        
+        **Test Credentials:**
+        - Email: john.doe@ibrat.com
+        - Password: ibrat123
+        
+        **Usage:**
+        - Copy JWT token from response
+        - Add to Authorization header: `Bearer <token>`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              admin_login:
+                summary: Admin Login
+                description: Login with admin credentials
+                value:
+                  email: "john.doe@ibrat.com"
+                  password: "ibrat123"
+              salesperson_login:
+                summary: Salesperson Login
+                description: Login with salesperson credentials
+                value:
+                  email: "jane.smith@ibrat.com"
+                  password: "ibrat123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwN2YxZjc3YmNmODZjZDc5OTQzOTAxMSIsIm5hbWUiOiJKb2huIERvZSIsImVtYWlsIjoiam9obi5kb2VAaWJyYXQuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM1NzE5NjAwLCJleHAiOjE3MzU3MjU2MDB9.example"
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "507f1f77bcf86cd799439011"
+                      name:
+                        type: string
+                        example: "John Doe"
+                      email:
+                        type: string
+                        example: "john.doe@ibrat.com"
+                      phone:
+                        type: string
+                        example: "+1234567890"
+                      role:
+                        type: string
+                        example: "admin"
+                      isActive:
+                        type: boolean
+                        example: true
+                      isAvailable:
+                        type: boolean
+                        example: true
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current user profile
+      description: Retrieve current authenticated user's profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /api/users:
+    get:
+      tags: [User Management]
+      summary: Get all users
+      description: Retrieve all users with pagination (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [admin, salesperson]
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+
+  /api/users/available-salespeople:
+    get:
+      tags: [User Management]
+      summary: Get available salespeople
+      description: Get list of available salespeople for call assignment
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Available salespeople retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  salespeople:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+
+  /api/leads:
+    get:
+      tags: [Lead Management]
+      summary: Get all leads
+      description: Retrieve leads with filtering and pagination
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, claimed, calling, answered, transferred, failed]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [urgent, high, medium, low]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Leads retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  leads:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+
+    post:
+      tags: [Lead Management]
+      summary: Create a new lead
+      description: Create a single lead manually
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadCreateRequest'
+      responses:
+        '201':
+          description: Lead created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lead created successfully"
+                  lead:
+                    $ref: '#/components/schemas/Lead'
+
+  /api/leads/upload-csv:
+    post:
+      tags: [Lead Management]
+      summary: Upload leads via CSV
+      description: Bulk upload leads from CSV file (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                csvFile:
+                  type: string
+                  format: binary
+                  description: CSV file with lead data
+      responses:
+        '200':
+          description: CSV upload completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "CSV upload completed"
+                  summary:
+                    type: object
+                    properties:
+                      totalProcessed:
+                        type: integer
+                      successCount:
+                        type: integer
+                      duplicateCount:
+                        type: integer
+                      errorCount:
+                        type: integer
+
+  /api/calls:
+    get:
+      tags: [Call Management]
+      summary: Get all calls
+      description: Retrieve call logs with filtering and pagination
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [initiated, ringing, answered, completed, busy, no-answer, failed]
+        - name: salesperson
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Calls retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  calls:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CallLog'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+
+  /api/calls/initiate:
+    post:
+      tags: [Call Management]
+      summary: Initiate a call
+      description: Start a call to a lead (salesperson only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallInitiateRequest'
+      responses:
+        '200':
+          description: Call initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Call started successfully"
+                  call:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      lead:
+                        type: string
+                      status:
+                        type: string
+                      twilioCallSid:
+                        type: string
+
+  /api/admin/dashboard:
+    get:
+      tags: [Admin Panel]
+      summary: Get admin dashboard
+      description: Retrieve comprehensive system overview and statistics (admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dashboard:
+                    type: object
+                    properties:
+                      userStats:
+                        type: object
+                        properties:
+                          totalUsers:
+                            type: integer
+                          activeUsers:
+                            type: integer
+                          availableSalespeople:
+                            type: integer
+                          totalAdmins:
+                            type: integer
+                      leadStats:
+                        type: object
+                        properties:
+                          totalLeads:
+                            type: integer
+                          pendingLeads:
+                            type: integer
+                          callingLeads:
+                            type: integer
+                          answeredLeads:
+                            type: integer
+                      callStats:
+                        type: object
+                        properties:
+                          totalCalls:
+                            type: integer
+                          todayCalls:
+                            type: integer
+                          answeredCalls:
+                            type: integer
+                          completedCalls:
+                            type: integer
+
+  /api/admin/leads/bulk-action:
+    post:
+      tags: [Admin Panel]
+      summary: Perform bulk actions on leads
+      description: Execute bulk operations on multiple leads (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkActionRequest'
+      responses:
+        '200':
+          description: Bulk action completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bulk action 'update_priority' completed successfully"
+                  modifiedCount:
+                    type: integer
+                  leadIds:
+                    type: array
+                    items:
+                      type: string
+
+  /api/admin/system/control:
+    post:
+      tags: [Admin Panel]
+      summary: Control system operations
+      description: Control call queue and system operations (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SystemControlRequest'
+      responses:
+        '200':
+          description: System action completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Call queue paused"
+                  status:
+                    type: string
+                    example: "paused"
+
+  /api/operator/dashboard:
+    get:
+      tags: [Operator Panel]
+      summary: Get operator dashboard
+      description: Retrieve personal performance overview (salesperson only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Operator dashboard retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dashboard:
+                    type: object
+                    properties:
+                      personalStats:
+                        type: object
+                        properties:
+                          totalCalls:
+                            type: integer
+                          todayCalls:
+                            type: integer
+                          answeredCalls:
+                            type: integer
+                          completedCalls:
+                            type: integer
+                      assignedLeads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Lead'
+                      availableLeads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Lead'
+
+  /api/operator/leads/available:
+    get:
+      tags: [Operator Panel]
+      summary: Get available leads
+      description: Browse leads available for claiming (salesperson only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [urgent, high, medium, low]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Available leads retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  leads:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+
+  /api/operator/leads/claim:
+    post:
+      tags: [Operator Panel]
+      summary: Claim a lead
+      description: Claim a lead for personal work (salesperson only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - leadId
+              properties:
+                leadId:
+                  type: string
+                  example: "507f1f77bcf86cd799439012"
+      responses:
+        '200':
+          description: Lead claimed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lead claimed successfully"
+                  lead:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      phone:
+                        type: string
+                      name:
+                        type: string
+                      priority:
+                        type: string
+                      status:
+                        type: string
+
+  /api/operator/calls/start:
+    post:
+      tags: [Operator Panel]
+      summary: Start a call
+      description: Initiate a call to a claimed lead (salesperson only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallInitiateRequest'
+      responses:
+        '200':
+          description: Call started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Call started successfully"
+                  call:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      lead:
+                        type: string
+                      status:
+                        type: string
+                      twilioCallSid:
+                        type: string
+
+  /api/operator/profile/availability:
+    put:
+      tags: [Operator Panel]
+      summary: Update availability
+      description: Set online/offline status (salesperson only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isAvailable
+              properties:
+                isAvailable:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Availability updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Availability updated successfully"
+                  isAvailable:
+                    type: boolean
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: User Management
+    description: User account management (admin only)
+  - name: Lead Management
+    description: Lead data management and operations
+  - name: Call Management
+    description: Call operations and tracking
+  - name: Admin Panel
+    description: Administrative functions and system control
+  - name: Operator Panel
+    description: Salesperson/operator work interface 
