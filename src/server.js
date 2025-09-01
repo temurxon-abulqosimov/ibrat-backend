@@ -8,6 +8,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
+const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -62,7 +63,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Swagger Documentation
-const swaggerDocument = YAML.load('./swagger.yaml');
+const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'Ibrat Lead Calling System API'

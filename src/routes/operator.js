@@ -286,7 +286,7 @@ router.post('/calls/start', validate('initiateCall'), async (req, res) => {
     await callLog.save();
 
     // Initiate call via Twilio service
-    const { initiateCall } = require('../src/services/twilioService');
+    const { initiateCall } = require('../services/twilioService');
     const callResult = await initiateCall(lead.phone, req.user.phone, callLog._id);
 
     if (callResult.success) {
@@ -295,7 +295,7 @@ router.post('/calls/start', validate('initiateCall'), async (req, res) => {
       await callLog.save();
 
       // Emit real-time update
-      const { emitCallUpdate } = require('../src/services/socketHandler');
+      const { emitCallUpdate } = require('../services/socketHandler');
       emitCallUpdate('call_initiated', {
         leadId: lead._id,
         salespersonId: userId,
@@ -378,7 +378,7 @@ router.put('/calls/:id/update', async (req, res) => {
     }
 
     // Emit real-time update
-    const { emitCallUpdate } = require('../src/services/socketHandler');
+    const { emitCallUpdate } = require('../services/socketHandler');
     emitCallUpdate('call_status_updated', {
       callId: callLog._id,
       status: status,
@@ -466,7 +466,7 @@ router.put('/profile/availability', async (req, res) => {
     await User.findByIdAndUpdate(userId, { isAvailable });
 
     // Emit real-time update
-    const { emitCallUpdate } = require('../src/services/socketHandler');
+    const { emitCallUpdate } = require('../services/socketHandler');
     emitCallUpdate('user_availability_changed', {
       userId: userId,
       isAvailable: isAvailable,

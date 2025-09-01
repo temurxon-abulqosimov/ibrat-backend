@@ -6,9 +6,9 @@
  */
 
 const mongoose = require('mongoose');
-const User = require('./models/User');
-const Lead = require('./models/Lead');
-const CallLog = require('./models/CallLog');
+const User = require('./src/models/User');
+const Lead = require('./src/models/Lead');
+const CallLog = require('./src/models/CallLog');
 
 // Demo configuration
 const DEMO_CONFIG = {

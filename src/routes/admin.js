@@ -148,12 +148,12 @@ router.get('/dashboard', async (req, res) => {
 // @access  Private (Admin only)
 router.get('/system-status', async (req, res) => {
   try {
-    const { callQueue } = require('../src/services/callQueue');
+    const { callQueue } = require('../services/callQueue');
     
     const systemStatus = {
       database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
       callQueue: callQueue.getStatus(),
-      activeConnections: require('../src/services/socketHandler').getConnectedUsersCount(),
+      activeConnections: require('../services/socketHandler').getConnectedUsersCount(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       environment: process.env.NODE_ENV || 'development'
@@ -333,7 +333,7 @@ router.post('/system/control', async (req, res) => {
       });
     }
 
-    const { callQueue } = require('../src/services/callQueue');
+    const { callQueue } = require('../services/callQueue');
     let result;
 
     switch (action) {
