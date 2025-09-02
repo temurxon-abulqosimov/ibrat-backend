@@ -6,7 +6,7 @@ const schemas = {
   registerUser: Joi.object({
     name: Joi.string().min(2).max(100).required(),
     email: Joi.string().email().required(),
-    phone: Joi.string().pattern(/^\+?[\d\s\-\(\)]+$/).required(),
+    phone: Joi.string().pattern(/^\+998[0-9]{9}$/).required(),
     password: Joi.string().min(6).required(),
     role: Joi.string().valid('admin', 'salesperson').default('salesperson')
   }),
@@ -19,7 +19,7 @@ const schemas = {
 
   // Lead creation
   createLead: Joi.object({
-    phone: Joi.string().pattern(/^\+?[\d\s\-\(\)]+$/).required(),
+    phone: Joi.string().pattern(/^\+998[0-9]{9}$/).required(),
     name: Joi.string().max(100).optional(),
     email: Joi.string().email().optional(),
     priority: Joi.string().valid('low', 'medium', 'high', 'urgent').default('medium'),
@@ -56,7 +56,7 @@ const schemas = {
   // User update
   updateUser: Joi.object({
     name: Joi.string().min(2).max(100).optional(),
-    phone: Joi.string().pattern(/^\+?[\d\s\-\(\)]+$/).optional(),
+    phone: Joi.string().pattern(/^\+998[0-9]{9}$/).optional(),
     isAvailable: Joi.boolean().optional(),
     isActive: Joi.boolean().optional()
   }),
@@ -134,7 +134,7 @@ const validateFileUpload = (req, res, next) => {
   const maxSize = parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024; // 10MB default
   if (req.file.size > maxSize) {
     return res.status(400).json({ 
-      error: `File size too large. Maximum size is ${maxSize / (1024 * 1024)}MB.` 
+      error: File size too large. Maximum size is MB. 
     });
   }
 
@@ -146,4 +146,4 @@ module.exports = {
   validateQuery,
   validateFileUpload,
   schemas
-}; 
+};

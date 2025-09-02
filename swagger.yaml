@@ -8,14 +8,14 @@ info:
     
     ### **1. Authentication Flow**
     1. **Register User**: `POST /api/auth/register` (admin only)
-       - Use test credentials: `john.doe@ibrat.com` / `ibrat123`
+       - Use test credentials: `john.doe@ibrat.uz` / `ibrat123`
     2. **Login**: `POST /api/auth/login` with same credentials
        - Copy JWT token from response
     3. **Use APIs**: Add `Authorization: Bearer <token>` header
     
     ### **2. Test Credentials**
-    - **Admin**: `john.doe@ibrat.com` / `ibrat123`
-    - **Salesperson**: `jane.smith@ibrat.com` / `ibrat123`
+    - **Admin**: `john.doe@ibrat.uz` / `ibrat123`
+    - **Salesperson**: `jane.smith@ibrat.uz` / `ibrat123`
     
     ### **3. API Access**
     - **Admin Panel**: Full system access
@@ -74,7 +74,7 @@ components:
           example: "john@example.com"
         phone:
           type: string
-          example: "+1234567890"
+          example: "+998901234567"
         role:
           type: string
           enum: [admin, salesperson]
@@ -109,7 +109,7 @@ components:
           example: "507f1f77bcf86cd799439012"
         phone:
           type: string
-          example: "+1234567890"
+          example: "+998901234567"
         name:
           type: string
           example: "Lead Name"
@@ -155,7 +155,7 @@ components:
           example: "initiated"
         from:
           type: string
-          example: "+1234567890"
+          example: "+998901234567"
         to:
           type: string
           example: "+0987654321"
@@ -175,7 +175,7 @@ components:
         email:
           type: string
           format: email
-          example: "john.doe@ibrat.com"
+          example: "john.doe@ibrat.uz"
         password:
           type: string
           example: "ibrat123"
@@ -195,10 +195,10 @@ components:
         email:
           type: string
           format: email
-          example: "john.doe@ibrat.com"
+          example: "john.doe@ibrat.uz"
         phone:
           type: string
-          example: "+1234567890"
+          example: "+998901234567"
         password:
           type: string
           minLength: 6
@@ -216,7 +216,7 @@ components:
       properties:
         phone:
           type: string
-          example: "+1234567890"
+          example: "+998901234567"
         name:
           type: string
           example: "Lead Name"
@@ -325,7 +325,7 @@ paths:
         3. Get JWT token for API access
         
         **Test Credentials:**
-        - Email: john.doe@ibrat.com
+        - Email: john.doe@ibrat.uz
         - Password: ibrat123
         - Role: admin
       security:
@@ -342,8 +342,8 @@ paths:
                 description: Register an admin user with test credentials
                 value:
                   name: "John Doe"
-                  email: "john.doe@ibrat.com"
-                  phone: "+1234567890"
+                  email: "john.doe@ibrat.uz"
+                  phone: "+998901234567"
                   password: "ibrat123"
                   role: "admin"
               salesperson_user:
@@ -351,7 +351,7 @@ paths:
                 description: Register a salesperson user
                 value:
                   name: "Jane Smith"
-                  email: "jane.smith@ibrat.com"
+                  email: "jane.smith@ibrat.uz"
                   phone: "+1234567891"
                   password: "ibrat123"
                   role: "salesperson"
@@ -377,10 +377,10 @@ paths:
                         example: "John Doe"
                       email:
                         type: string
-                        example: "john.doe@ibrat.com"
+                        example: "john.doe@ibrat.uz"
                       phone:
                         type: string
-                        example: "+1234567890"
+                        example: "+998901234567"
                       role:
                         type: string
                         example: "admin"
@@ -410,7 +410,7 @@ paths:
         3. Include token in Authorization header
         
         **Test Credentials:**
-        - Email: john.doe@ibrat.com
+        - Email: john.doe@ibrat.uz
         - Password: ibrat123
         
         **Usage:**
@@ -427,13 +427,13 @@ paths:
                 summary: Admin Login
                 description: Login with admin credentials
                 value:
-                  email: "john.doe@ibrat.com"
+                  email: "john.doe@ibrat.uz"
                   password: "ibrat123"
               salesperson_login:
                 summary: Salesperson Login
                 description: Login with salesperson credentials
                 value:
-                  email: "jane.smith@ibrat.com"
+                  email: "jane.smith@ibrat.uz"
                   password: "ibrat123"
       responses:
         '200':
@@ -460,10 +460,10 @@ paths:
                         example: "John Doe"
                       email:
                         type: string
-                        example: "john.doe@ibrat.com"
+                        example: "john.doe@ibrat.uz"
                       phone:
                         type: string
-                        example: "+1234567890"
+                        example: "+998901234567"
                       role:
                         type: string
                         example: "admin"
@@ -1121,3 +1121,4 @@ tags:
     description: Administrative functions and system control
   - name: Operator Panel
     description: Salesperson/operator work interface 
+

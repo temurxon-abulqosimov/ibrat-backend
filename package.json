@@ -2,12 +2,10 @@
   "name": "ibrat-lead-calling-backend",
   "version": "1.0.0",
   "description": "Backend for AI-powered lead calling system MVP",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon ./src/server.js",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "pm2": "pm2 start ecosystem.config.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -27,17 +25,16 @@
     "twilio": "^4.10.0",
     "yamljs": "^0.3.0"
   },
-  "devDependencies": {
-    "jest": "^29.6.2",
-    "nodemon": "^3.0.1",
-    "supertest": "^6.3.3"
-  },
   "keywords": [
     "lead-calling",
     "twilio",
     "automation",
     "mvp"
   ],
-  "author": "Your Name",
-  "license": "MIT"
+  "author": "Ibrat Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
 }
